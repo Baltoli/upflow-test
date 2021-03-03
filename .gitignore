@@ -210,3 +210,6 @@ tags
 *.xhtml
 
 # End of https://www.toptal.com/developers/gitignore/api/node,web,macos,linux,vim,git
+
+*.db
+data/
