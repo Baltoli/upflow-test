@@ -19,12 +19,12 @@ app.post('/submit', async (req, res) => {
 
   const newDoc = await Document.create({pdf: path, thumbnail: thumbPath});
 
-  res.status(200).json(newDoc.render());
+  res.status(200).json(newDoc.render(req.headers.host));
 });
 
 app.get('/list', async (req, res) => {
   const docs = await Document.findAll();
-  res.status(200).json({documents: docs.map(d => d.render())});
+  res.status(200).json({documents: docs.map(d => d.render(req.headers.host))});
 });
 
 app.get('/image/:id', async (req, res) => {

@@ -19,9 +19,12 @@ export class Document extends Model<IDocument, IDocumentCreate> implements
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public render() {
+  public render(host?: string) {
+    const hostString = host ? `http://${host}` : '';
+
     return {
-      pdf: `/pdf/${this.id}`, thumbnail: `/image/${this.id}`
+      pdf: `${hostString}/pdf/${this.id}`,
+          thumbnail: `${hostString}/image/${this.id}`
     }
   }
 }
