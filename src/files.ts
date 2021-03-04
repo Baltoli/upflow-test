@@ -1,5 +1,6 @@
+import {Response} from 'express';
 import fs from 'fs';
-import {access, mkdir} from 'fs/promises';
+import {access, mkdir, writeFile} from 'fs/promises';
 import http from 'http';
 import path from 'path';
 import {fromPath} from 'pdf2pic';
@@ -29,18 +30,30 @@ export async function createDownloadDirectory() {
   return await mkdir(downloadDirectory, {recursive: true});
 }
 
-export async function downloadPDF(url: string): Promise<string> {
+export async function downloadPDF(url: string): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    http.get(url, async (res) => {
+      let parts: Buffer[] = [];
+
+      res.on('data', (part: Buffer) => {
+        parts.push(part);
+      });
+
+      res.on('end', () => {
+        resolve(Buffer.concat(parts));
+      });
+    });
+  });
+}
+
+export async function writePDFBufferToFile(
+    data: Buffer, url: string): Promise<string> {
   const pathHint = path.join('.', downloadDirectory, path.basename(url));
   const absolutePath = await getUniquePath(path.resolve(pathHint));
 
-  return new Promise<string>((resolve, reject) => {
-    http.get(url, async (res) => {
-      const outFile = await fs.createWriteStream(absolutePath);
-      res.pipe(outFile);
+  await writeFile(absolutePath, data);
 
-      res.on('close', () => resolve(absolutePath));
-    });
-  });
+  return absolutePath;
 }
 
 export async function createThumbnail(file: string): Promise<string> {
