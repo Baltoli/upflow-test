@@ -1,10 +1,11 @@
 import {Request, Response} from 'express';
 
 import {Document} from './database';
-import {documentQueue} from './queue';
+import {documentQueue, DocumentTask} from './queue';
 
 export async function submitURL(req: Request, res: Response) {
-  documentQueue.push(req.body.url);
+  documentQueue.push(
+      {url: req.body.url, host: req.headers.host, hook: req.body.hook});
   res.status(200).end();
 }
 
