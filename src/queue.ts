@@ -6,15 +6,20 @@ import {createThumbnail, downloadPDF, hashPDFBuffer, writePDFBufferToFile} from 
 async function documentWorker(arg: string, callback: any) {
   const buffer = await downloadPDF(arg);
 
-  const path = await writePDFBufferToFile(buffer, arg);
-  const thumbPath = await createThumbnail(path);
-
   const hash = hashPDFBuffer(buffer);
 
-  const newDoc =
-      await Document.create({pdf: path, thumbnail: thumbPath, hash: hash});
+  const existing = await Document.findOne({where: {hash: hash}});
+  if (existing === null) {
+    const path = await writePDFBufferToFile(buffer, arg);
+    const thumbPath = await createThumbnail(path);
 
-  callback(null, {path, thumbPath});
+    await Document.create({pdf: path, thumbnail: thumbPath, hash: hash});
+  } else {
+    await Document.create(
+        {pdf: existing.pdf, thumbnail: existing.thumbnail, hash: hash});
+  }
+
+  callback(null, {});
 }
 
 export const documentQueue = fastqueue(documentWorker, 1);
