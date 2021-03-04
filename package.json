@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "express": "^4.17.1",
+    "fastq": "^1.11.0",
     "pdf2pic": "^2.1.4",
     "sequelize": "^6.5.0",
     "sqlite": "^4.0.19",

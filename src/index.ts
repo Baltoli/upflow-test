@@ -1,4 +1,5 @@
 import express from 'express';
+import fastqueue from 'fastq';
 
 import {Document} from './database';
 import {createDownloadDirectory, createThumbnail, downloadPDF} from './files';
@@ -8,18 +9,24 @@ createDownloadDirectory();
 const app = express();
 const port = 3000;
 
-app.use(express.json());
-
-app.post('/submit', async (req, res) => {
+async function queueWorker(arg: string, callback: any) {
   await Document.sync();
-  const url = req.body.url;
 
-  const path = await downloadPDF(url);
+  const path = await downloadPDF(arg);
   const thumbPath = await createThumbnail(path);
 
   const newDoc = await Document.create({pdf: path, thumbnail: thumbPath});
 
-  res.status(200).json(newDoc.render(req.headers.host));
+  callback(null, {path, thumbPath});
+}
+
+const queue = fastqueue(queueWorker, 1);
+
+app.use(express.json());
+
+app.post('/submit', async (req, res) => {
+  queue.push(req.body.url);
+  res.status(200).end();
 });
 
 app.get('/list', async (req, res) => {
