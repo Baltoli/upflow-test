@@ -19,7 +19,7 @@ export class Document extends Model<IDocument, IDocumentCreate> implements
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public downloadLinks() {
+  public render() {
     return {
       pdf: `/pdf/${this.id}`, thumbnail: `/image/${this.id}`
     }
