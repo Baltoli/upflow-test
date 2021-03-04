@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {Response} from 'express';
 import fs from 'fs';
 import {access, mkdir, writeFile} from 'fs/promises';
@@ -54,6 +55,12 @@ export async function writePDFBufferToFile(
   await writeFile(absolutePath, data);
 
   return absolutePath;
+}
+
+export function hashPDFBuffer(data: Buffer): string {
+  const hash = crypto.createHash('sha256');
+  hash.update(data);
+  return hash.digest('hex');
 }
 
 export async function createThumbnail(file: string): Promise<string> {

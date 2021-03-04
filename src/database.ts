@@ -6,6 +6,7 @@ interface IDocument {
   id: number;
   pdf: string;
   thumbnail: string;
+  hash: string;
 }
 
 interface IDocumentCreate extends Optional<IDocument, 'id'> {}
@@ -15,6 +16,7 @@ export class Document extends Model<IDocument, IDocumentCreate> implements
   public id!: number;
   public pdf!: string;
   public thumbnail!: string;
+  public hash!: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -33,6 +35,7 @@ Document.init(
     {
       id: {type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
       pdf: {type: DataTypes.STRING, allowNull: false},
-      thumbnail: {type: DataTypes.STRING, allowNull: false}
+      thumbnail: {type: DataTypes.STRING, allowNull: false},
+      hash: {type: DataTypes.STRING, allowNull: false}
     },
     {sequelize: connection, modelName: 'document'});
