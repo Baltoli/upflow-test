@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import {Response} from 'express';
 import fs from 'fs';
 import {access, mkdir, writeFile} from 'fs/promises';
-import http from 'http';
+import fetch from 'node-fetch';
 import path from 'path';
 import {fromPath} from 'pdf2pic';
 
@@ -32,18 +32,9 @@ export async function createDownloadDirectory() {
 }
 
 export async function downloadPDF(url: string): Promise<Buffer> {
-  return new Promise<Buffer>((resolve, reject) => {
-    http.get(url, async (res) => {
-      let parts: Buffer[] = [];
-
-      res.on('data', (part: Buffer) => {
-        parts.push(part);
-      });
-
-      res.on('end', () => {
-        resolve(Buffer.concat(parts));
-      });
-    });
+  return new Promise<Buffer>(async (resolve, reject) => {
+    const res = await fetch(url);
+    resolve(await res.buffer());
   });
 }
 
