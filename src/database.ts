@@ -1,31 +1,35 @@
-import {Database, open} from 'sqlite'
-import sqlite3 from 'sqlite3';
+import {DataTypes, Model, Optional, Sequelize} from 'sequelize';
 
-let database: Database;
+const connection = new Sequelize('sqlite:upflow.db');
 
-export const databasePath = 'upflow.db';
-
-export interface Row {
-  pdf: string
-  thumb: string
-  timestamp: number
+interface IDocument {
+  id: number;
+  pdf: string;
+  thumbnail: string;
 }
 
-export async function openDatabase() {
-  database = await open({
-    filename: databasePath,
-    driver: sqlite3.Database,
-  });
+interface IDocumentCreate extends Optional<IDocument, 'id'> {}
 
-  return database;
+export class Document extends Model<IDocument, IDocumentCreate> implements
+    IDocument {
+  public id!: number;
+  public pdf!: string;
+  public thumbnail!: string;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+
+  public downloadLinks() {
+    return {
+      pdf: `/pdf/${this.id}`, thumbnail: `/image/${this.id}`
+    }
+  }
 }
 
-export async function insertEntry(path: string) {
-  await database.run(
-      `INSERT INTO pdfs (pdf, thumb, timestamp) VALUES (?, ?, strftime('%s','now'))`,
-      path, 'no-thumb');
-}
-
-export async function allEntries() {
-  return await database.all<Row[]>('SELECT * FROM pdfs');
-}
+Document.init(
+    {
+      id: {type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
+      pdf: {type: DataTypes.STRING, allowNull: false},
+      thumbnail: {type: DataTypes.STRING, allowNull: false}
+    },
+    {sequelize: connection, modelName: 'document'});
