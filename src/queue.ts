@@ -10,35 +10,28 @@ export interface UploadTask {
   hook?: string;
 }
 
-async function documentWorker(arg: UploadTask) {
+async function documentWorker(
+    arg: UploadTask, callback: fastqueue.done<Upload>) {
   const buffer = await downloadPDF(arg.url);
 
   const hash = hashPDFBuffer(buffer);
 
-  const createdDoc = await Document.findOrCreate({
+  const [doc] = await Document.findOrCreate({
     where: {hash},
     defaults: {pdf: buffer, thumbnail: await createThumbnail(buffer), hash}
   });
 
-  // const existing = await Document.findOne({where: {hash: hash}});
-  // if (existing === null) {
-  //   const path = await writePDFBufferToFile(buffer, arg.url);
-  //   const thumbnail = await createThumbnail(path);
+  const newUpload = await Upload.create({documentId: doc.id});
 
-  //   createdDoc = await Document.create({pdf: buffer, thumbnail, hash});
-  // } else {
-  //   //   createdDoc = await Upload.create(
-  //   //       {pdf: existing.pdf, thumbnail: existing.thumbnail, hash:
-  //   hash});
-  // }
+  if (arg.hook) {
+    await fetch(arg.hook + '/success', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({document: newUpload.render(arg.host)})
+    });
+  }
 
-  // if (arg.hook) {
-  //   await fetch(arg.hook + '/success', {
-  //     method: 'POST',
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: JSON.stringify({document: createdDoc.render(arg.host)})
-  //   });
-  // }
+  callback(null, newUpload);
 }
 
 export const documentQueue = fastqueue(documentWorker, 1);

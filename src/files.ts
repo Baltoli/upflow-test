@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import {access, mkdir, readFile, writeFile} from 'fs/promises';
+import {readFile} from 'fs/promises';
 import fetch from 'node-fetch';
 import path from 'path';
 import {fromBuffer} from 'pdf2pic';
