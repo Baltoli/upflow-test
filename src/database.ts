@@ -2,22 +2,21 @@ import {DataTypes, Model, Optional, Sequelize} from 'sequelize';
 
 const connection = new Sequelize('sqlite:upflow.db');
 
-export interface DocumentResource {
+export interface UploadResource {
   pdf: string;
   thumbnail: string;
 }
 
-interface IDocument {
+interface IUpload {
   id: number;
   pdf: string;
   thumbnail: string;
   hash: string;
 }
 
-interface IDocumentCreate extends Optional<IDocument, 'id'> {}
+interface IUploadCreate extends Optional<IUpload, 'id'> {}
 
-export class Document extends Model<IDocument, IDocumentCreate> implements
-    IDocument {
+export class Upload extends Model<IUpload, IUploadCreate> implements IUpload {
   public id!: number;
   public pdf!: string;
   public thumbnail!: string;
@@ -26,7 +25,7 @@ export class Document extends Model<IDocument, IDocumentCreate> implements
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public render(host?: string): DocumentResource {
+  public render(host?: string): UploadResource {
     const hostString = host ? `http://${host}` : '';
 
     return {
@@ -36,11 +35,11 @@ export class Document extends Model<IDocument, IDocumentCreate> implements
   }
 }
 
-Document.init(
+Upload.init(
     {
       id: {type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
       pdf: {type: DataTypes.STRING, allowNull: false},
       thumbnail: {type: DataTypes.STRING, allowNull: false},
       hash: {type: DataTypes.STRING, allowNull: false}
     },
-    {sequelize: connection, modelName: 'document'});
+    {sequelize: connection, modelName: 'upload'});

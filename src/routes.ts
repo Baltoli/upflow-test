@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 
-import {Document} from './database';
+import {Upload} from './database';
 import {documentQueue} from './queue';
 
 export function submitURL(req: Request, res: Response): void {
@@ -10,17 +10,17 @@ export function submitURL(req: Request, res: Response): void {
 }
 
 export async function listAll(req: Request, res: Response): Promise<void> {
-  const rawDocuments = await Document.findAll();
-  const documents = rawDocuments.map(d => d.render(req.headers.host));
+  const rawUploads = await Upload.findAll();
+  const documents = rawUploads.map(d => d.render(req.headers.host));
   res.status(200).json({documents});
 }
 
-type DocumentFileKey = 'pdf'|'thumbnail';
+type UploadFileKey = 'pdf'|'thumbnail';
 
-export function keyFromDocumentWithID(key: DocumentFileKey):
+export function keyFromUploadWithID(key: UploadFileKey):
     ((req: Request, res: Response) => Promise<void>) {
   return async (req, res) => {
-    const doc = await Document.findByPk(req.params.id);
+    const doc = await Upload.findByPk(req.params.id);
 
     if (doc === null) {
       res.status(404).end();

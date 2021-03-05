@@ -1,12 +1,12 @@
 import express from 'express';
 
-import {Document} from './database';
+import {Upload} from './database';
 import {createDownloadDirectory} from './files';
 
 import * as routes from './routes';
 
 function initialiseApp() {
-  Document.sync();
+  Upload.sync();
   createDownloadDirectory();
 
   const app = express();
@@ -15,8 +15,8 @@ function initialiseApp() {
   app.post('/submit', routes.submitURL);
   app.get('/list', routes.listAll);
 
-  app.get('/pdf/:id', routes.keyFromDocumentWithID('pdf'));
-  app.get('/image/:id', routes.keyFromDocumentWithID('thumbnail'));
+  app.get('/pdf/:id', routes.keyFromUploadWithID('pdf'));
+  app.get('/image/:id', routes.keyFromUploadWithID('thumbnail'));
 
   return app;
 }

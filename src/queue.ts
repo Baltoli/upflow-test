@@ -1,31 +1,31 @@
 import fastqueue from 'fastq';
 import fetch from 'node-fetch';
 
-import {Document} from './database';
+import {Upload} from './database';
 import {createThumbnail, downloadPDF, hashPDFBuffer, writePDFBufferToFile} from './files';
 
-export interface DocumentTask {
+export interface UploadTask {
   url: string;
   host?: string;
   hook?: string;
 }
 
-async function documentWorker(arg: DocumentTask) {
+async function documentWorker(arg: UploadTask) {
   const buffer = await downloadPDF(arg.url);
 
   const hash = hashPDFBuffer(buffer);
 
-  let createdDoc: Document;
+  let createdDoc: Upload;
 
-  const existing = await Document.findOne({where: {hash: hash}});
+  const existing = await Upload.findOne({where: {hash: hash}});
   if (existing === null) {
     const path = await writePDFBufferToFile(buffer, arg.url);
     const thumbPath = await createThumbnail(path);
 
     createdDoc =
-        await Document.create({pdf: path, thumbnail: thumbPath, hash: hash});
+        await Upload.create({pdf: path, thumbnail: thumbPath, hash: hash});
   } else {
-    createdDoc = await Document.create(
+    createdDoc = await Upload.create(
         {pdf: existing.pdf, thumbnail: existing.thumbnail, hash: hash});
   }
 
