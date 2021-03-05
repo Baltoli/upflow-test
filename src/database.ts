@@ -2,6 +2,15 @@ import {Association, DataTypes, Model, Optional, Sequelize} from 'sequelize';
 
 const connection = new Sequelize('sqlite:upflow.db');
 
+/*
+ * The Document model represents an uploaded PDF with its generated thumbnail,
+ * both of which are stored as binary blobs in the database.
+ *
+ * A hash of the PDF content is also stored; this allows for duplicates to be
+ * detected on document upload (though this invariant is not checked at the
+ * database level, nor is the provenance of the hash checked).
+ */
+
 interface IDocument {
   id: number;
   pdf: Buffer;
@@ -30,6 +39,12 @@ Document.init(
       hash: {type: DataTypes.STRING, allowNull: false}
     },
     {sequelize: connection, modelName: 'document'});
+
+/*
+ * The Upload model represents the result of a single client request to the
+ * /submit endpoint - a fresh instance is always created, even if the linked
+ * document already exists in the database.
+ */
 
 export interface UploadResource {
   pdf: string;

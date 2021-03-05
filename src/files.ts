@@ -5,17 +5,30 @@ import path from 'path';
 import {fromBuffer} from 'pdf2pic';
 import tempy from 'tempy';
 
-export async function downloadPDF(url: string): Promise<Buffer> {
+export async function downloadToBuffer(url: string): Promise<Buffer> {
   const res = await fetch(url);
   return res.buffer();
 }
 
-export function hashPDFBuffer(data: Buffer): string {
+export function hashBuffer(data: Buffer): string {
   const hash = crypto.createHash('sha256');
   hash.update(data);
   return hash.digest('hex');
 }
 
+/*
+ * Create a small PNG thumbnail from the first page of a PDF document.
+ *
+ * At the moment, the encoding settings for this process are hard-coded to
+ * produce a 100 DPI image with the aspect ratio of a portrait A4 document. It's
+ * possible in theory to work out the size of a PDF page, but it requires poking
+ * around in arcane metadata.
+ *
+ * Because the PDF rendering process shells out to GraphicsMagick internally, we
+ * need to write a temporary file to make the thumbnail. This gets deleted after
+ * we've read it back into a buffer. It would be ideal to do this entirely
+ * in-memory in an improved version.
+ */
 export async function createThumbnail(file: Buffer): Promise<Buffer> {
   const format = 'png';
   const page = 1;
