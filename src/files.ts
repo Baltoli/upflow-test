@@ -1,6 +1,4 @@
 import crypto from 'crypto';
-import {Response} from 'express';
-import fs from 'fs';
 import {access, mkdir, writeFile} from 'fs/promises';
 import fetch from 'node-fetch';
 import path from 'path';
@@ -27,15 +25,13 @@ async function getUniquePath(hint: string): Promise<string> {
   }
 }
 
-export async function createDownloadDirectory() {
-  return await mkdir(downloadDirectory, {recursive: true});
+export async function createDownloadDirectory(): Promise<void> {
+  await mkdir(downloadDirectory, {recursive: true});
 }
 
 export async function downloadPDF(url: string): Promise<Buffer> {
-  return new Promise<Buffer>(async (resolve, reject) => {
-    const res = await fetch(url);
-    resolve(await res.buffer());
-  });
+  const res = await fetch(url);
+  return res.buffer();
 }
 
 export async function writePDFBufferToFile(

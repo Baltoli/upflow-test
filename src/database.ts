@@ -2,6 +2,11 @@ import {DataTypes, Model, Optional, Sequelize} from 'sequelize';
 
 const connection = new Sequelize('sqlite:upflow.db');
 
+export interface DocumentResource {
+  pdf: string;
+  thumbnail: string;
+}
+
 interface IDocument {
   id: number;
   pdf: string;
@@ -21,7 +26,7 @@ export class Document extends Model<IDocument, IDocumentCreate> implements
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public render(host?: string) {
+  public render(host?: string): DocumentResource {
     const hostString = host ? `http://${host}` : '';
 
     return {

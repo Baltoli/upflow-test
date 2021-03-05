@@ -10,7 +10,7 @@ export interface DocumentTask {
   hook?: string;
 }
 
-async function documentWorker(arg: DocumentTask, callback: any) {
+async function documentWorker(arg: DocumentTask) {
   const buffer = await downloadPDF(arg.url);
 
   const hash = hashPDFBuffer(buffer);
@@ -36,8 +36,6 @@ async function documentWorker(arg: DocumentTask, callback: any) {
       body: JSON.stringify({document: createdDoc.render(arg.host)})
     });
   }
-
-  callback(null, {});
 }
 
 export const documentQueue = fastqueue(documentWorker, 1);
