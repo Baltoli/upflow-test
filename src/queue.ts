@@ -1,5 +1,4 @@
 import fastqueue from 'fastq';
-import fetch from 'node-fetch';
 
 import {Document, Upload} from './database';
 import {createThumbnail, downloadPDF, hashPDFBuffer} from './files';
@@ -9,7 +8,7 @@ export interface UploadTask {
 }
 
 async function documentWorker(
-    arg: UploadTask, callback: fastqueue.done<Upload>) {
+    arg: UploadTask, callback: fastqueue.done<Upload>): Promise<void> {
   try {
     const buffer = await downloadPDF(arg.url);
 
@@ -30,6 +29,7 @@ async function documentWorker(
 
 const documentQueue = fastqueue(documentWorker, 1);
 
-export function submitTask(task: UploadTask, callback: fastqueue.done<Upload>) {
+export function submitTask(
+    task: UploadTask, callback: fastqueue.done<Upload>): void {
   documentQueue.push(task, callback);
 }
