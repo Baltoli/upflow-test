@@ -20,12 +20,12 @@ type UploadFileKey = 'pdf'|'thumbnail';
 export function keyFromUploadWithID(key: UploadFileKey):
     ((req: Request, res: Response) => Promise<void>) {
   return async (req, res) => {
-    const doc = await Upload.findByPk(req.params.id);
+    // const doc = await Upload.findByPk(req.params.id);
 
-    if (doc === null) {
-      res.status(404).end();
-    } else {
-      res.status(200).sendFile(doc[key]);
-    }
+    // if (doc === null) {
+    res.status(404).end();
+    // } else {
+    //   res.status(200).sendFile(doc[key]);
+    // }
   };
 }
