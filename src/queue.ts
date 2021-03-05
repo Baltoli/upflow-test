@@ -6,32 +6,30 @@ import {createThumbnail, downloadPDF, hashPDFBuffer} from './files';
 
 export interface UploadTask {
   url: string;
-  host?: string;
-  hook?: string;
 }
 
 async function documentWorker(
     arg: UploadTask, callback: fastqueue.done<Upload>) {
-  const buffer = await downloadPDF(arg.url);
+  try {
+    const buffer = await downloadPDF(arg.url);
 
-  const hash = hashPDFBuffer(buffer);
+    const hash = hashPDFBuffer(buffer);
 
-  const [doc] = await Document.findOrCreate({
-    where: {hash},
-    defaults: {pdf: buffer, thumbnail: await createThumbnail(buffer), hash}
-  });
-
-  const newUpload = await Upload.create({documentId: doc.id});
-
-  if (arg.hook) {
-    await fetch(arg.hook + '/success', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({document: newUpload.render(arg.host)})
+    const [doc] = await Document.findOrCreate({
+      where: {hash},
+      defaults: {pdf: buffer, thumbnail: await createThumbnail(buffer), hash}
     });
-  }
 
-  callback(null, newUpload);
+    const newUpload = await Upload.create({documentId: doc.id});
+
+    callback(null, newUpload);
+  } catch (err) {
+    callback(err);
+  }
 }
 
-export const documentQueue = fastqueue(documentWorker, 1);
+const documentQueue = fastqueue(documentWorker, 1);
+
+export function submitTask(task: UploadTask, callback: fastqueue.done<Upload>) {
+  documentQueue.push(task, callback);
+}

@@ -1,11 +1,28 @@
 import {Request, Response} from 'express';
+import fetch from 'node-fetch';
 
 import {Upload} from './database';
-import {documentQueue} from './queue';
+import {submitTask} from './queue';
 
 export function submitURL(req: Request, res: Response): void {
-  documentQueue.push(
-      {url: req.body.url, host: req.headers.host, hook: req.body.hook});
+  submitTask({url: req.body.url}, async (err, newUpload) => {
+    if (req.body.hook) {
+      const endpoint = err ? '/error' : '/success';
+      const body = err ? {error: err.message} :
+                         {document: newUpload?.render(req.headers.host)};
+
+      try {
+        await fetch(req.body.hook + endpoint, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        });
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+    }
+  });
+
   res.status(200).end();
 }
 
