@@ -73,8 +73,8 @@ export class Upload extends Model<IUpload, IUploadCreate> implements IUpload {
     const hostString = host ? `http://${host}` : '';
 
     return {
-      pdf: `${hostString}/pdf/${this.id}`,
-          thumbnail: `${hostString}/image/${this.id}`
+      pdf: `${hostString}/uploads/${this.id}/pdf`,
+          thumbnail: `${hostString}/uploads/${this.id}/image`
     }
   }
 }

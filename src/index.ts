@@ -14,11 +14,11 @@ function initialiseApp() {
   const app = express();
   app.use(express.json());
 
-  app.post('/submit', routes.submitURL);
-  app.get('/list', routes.listUploads);
+  app.post('/upload', routes.submitURL);
+  app.get('/uploads', routes.listUploads);
 
-  app.get('/pdf/:id', routes.keyFromUploadWithID('pdf'));
-  app.get('/image/:id', routes.keyFromUploadWithID('thumbnail'));
+  app.get('/uploads/:id/pdf', routes.keyFromUploadWithID('pdf'));
+  app.get('/uploads/:id/image', routes.keyFromUploadWithID('thumbnail'));
 
   return app;
 }
