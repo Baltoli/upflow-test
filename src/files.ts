@@ -1,47 +1,13 @@
 import crypto from 'crypto';
-import {access, mkdir, writeFile} from 'fs/promises';
+import {access, mkdir, readFile, writeFile} from 'fs/promises';
 import fetch from 'node-fetch';
 import path from 'path';
-import {fromPath} from 'pdf2pic';
-
-export const downloadDirectory = 'data';
-
-let uniqueSuffix = 0;
-
-async function getUniquePath(hint: string): Promise<string> {
-  try {
-    await access(hint);
-
-    const dir = path.dirname(hint);
-    const ext = path.extname(hint);
-    const base = path.basename(hint, ext);
-
-    const unique = path.join(dir, `${base}_${uniqueSuffix}${ext}`);
-    uniqueSuffix += 1;
-
-    return getUniquePath(unique);
-  } catch {
-    return hint;
-  }
-}
-
-export async function createDownloadDirectory(): Promise<void> {
-  await mkdir(downloadDirectory, {recursive: true});
-}
+import {fromBuffer} from 'pdf2pic';
+import tempy from 'tempy';
 
 export async function downloadPDF(url: string): Promise<Buffer> {
   const res = await fetch(url);
   return res.buffer();
-}
-
-export async function writePDFBufferToFile(
-    data: Buffer, url: string): Promise<string> {
-  const pathHint = path.join('.', downloadDirectory, path.basename(url));
-  const absolutePath = await getUniquePath(path.resolve(pathHint));
-
-  await writeFile(absolutePath, data);
-
-  return absolutePath;
 }
 
 export function hashPDFBuffer(data: Buffer): string {
@@ -50,27 +16,23 @@ export function hashPDFBuffer(data: Buffer): string {
   return hash.digest('hex');
 }
 
-export async function createThumbnail(file: string): Promise<string> {
+export async function createThumbnail(file: Buffer): Promise<Buffer> {
   const format = 'png';
   const page = 1;
 
-  const dir = path.dirname(file);
-  const ext = path.extname(file);
-  const base = path.basename(file, ext);
+  return await tempy.directory.task(async (tmp) => {
+    const options = {
+      density: 100,
+      saveFilename: 'out',
+      savePath: tmp,
+      width: 210,
+      height: 297,
+      format: format
+    };
 
-  const uniqueOut =
-      await getUniquePath(path.join(dir, `${base}.${page}.${format}`));
+    await fromBuffer(file, options)(page);
 
-  const options = {
-    density: 100,
-    saveFilename: path.basename(uniqueOut, `.${page}.${format}`),
-    savePath: dir,
-    width: 210,
-    height: 297,
-    format: format
-  };
-
-  await fromPath(file, options)(page);
-
-  return uniqueOut;
+    const outputPath = path.join(tmp, `out.${page}.${format}`);
+    return await readFile(outputPath);
+  });
 }

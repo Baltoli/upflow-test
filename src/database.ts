@@ -9,10 +9,7 @@ interface IDocument {
   hash: string;
 }
 
-interface IDocumentCreate {
-  pdf: Buffer;
-  thumbnail: Buffer;
-}
+interface IDocumentCreate extends Optional<IDocument, 'id'> {}
 
 export class Document extends Model<IDocument, IDocumentCreate> implements
     IDocument {

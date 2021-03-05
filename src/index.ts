@@ -1,13 +1,11 @@
 import express from 'express';
 
-import {Upload} from './database';
-import {createDownloadDirectory} from './files';
-
+import {Document, Upload} from './database';
 import * as routes from './routes';
 
 function initialiseApp() {
   Upload.sync();
-  createDownloadDirectory();
+  Document.sync();
 
   const app = express();
   app.use(express.json());
